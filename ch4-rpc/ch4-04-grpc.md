@@ -230,7 +230,7 @@ for {
 
 ```go
 import (
-	"github.com/docker/docker/pkg/pubsub"
+	"github.com/moby/moby/pkg/pubsub"
 )
 
 func main() {
@@ -294,7 +294,7 @@ type PubsubServiceClient interface {
 	)
 }
 
-type HelloService_SubscribeServer interface {
+type PubsubService_SubscribeServer interface {
 	Send(*String) error
 	grpc.ServerStream
 }
@@ -386,7 +386,7 @@ func main() {
 	defer conn.Close()
 
 	client := NewPubsubServiceClient(conn)
-	stream, err := client.SubscribeTopic(
+	stream, err := client.Subscribe(
 		context.Background(), &String{Value: "golang:"},
 	)
 	if err != nil {

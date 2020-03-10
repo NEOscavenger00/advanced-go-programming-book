@@ -185,7 +185,6 @@ func LoopAdd(cnt, v0, step int) int {
 新的LoopAdd函数只有if/goto语句构成：
 
 ```go
-
 func LoopAdd(cnt, v0, step int) int {
 	var i = 0
 	var result = 0
@@ -213,8 +212,10 @@ LOOP_END:
 下面用汇编语言重新实现LoopAdd函数
 
 ```
+#include "textflag.h"
+
 // func LoopAdd(cnt, v0, step int) int
-TEXT ·LoopAdd(SB), NOSPLIT, $0-32
+TEXT ·LoopAdd(SB), NOSPLIT,  $0-32
 	MOVQ cnt+0(FP), AX   // cnt
 	MOVQ v0+8(FP), BX    // v0/result
 	MOVQ step+16(FP), CX // step
@@ -225,12 +226,12 @@ LOOP_BEGIN:
 LOOP_IF:
 	CMPQ DX, AX          // compare i, cnt
 	JL   LOOP_BODY       // if i < cnt: goto LOOP_BODY
-	goto LOOP_END
+	JMP LOOP_END
 
 LOOP_BODY:
 	ADDQ $1, DX          // i++
 	ADDQ CX, BX          // result += step
-	goto LOOP_IF
+	JMP LOOP_IF
 
 LOOP_END:
 

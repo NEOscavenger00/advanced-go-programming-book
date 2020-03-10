@@ -125,9 +125,12 @@ protoc  \
 	--proto_path=${GOPATH}/src \
 	--proto_path=${GOPATH}/src/github.com/google/protobuf/src \
 	--proto_path=. \
-	--govalidators_out=. \
+	--govalidators_out=. --go_out=plugins=grpc:.\
 	hello.proto
 ```
+
+> windows:替换 `${GOPATH}` 为 `%GOPATH%` 即可.
+
 
 以上的命令会调用protoc-gen-govalidators程序，生成一个独立的名为hello.validator.pb.go的文件：
 
@@ -213,9 +216,11 @@ go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
 $ protoc -I/usr/local/include -I. \
 	-I$GOPATH/src \
 	-I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-	--grpc-gateway_out=. \
+	--grpc-gateway_out=. --go_out=plugins=grpc:.\
 	hello.proto
 ```
+
+> windows:替换 `${GOPATH}` 为 `%GOPATH%` 即可.
 
 插件会为RestService服务生成对应的RegisterRestServiceHandlerFromEndpoint函数：
 
@@ -240,7 +245,7 @@ func main() {
 
 	err := RegisterRestServiceHandlerFromEndpoint(
 		ctx, mux, "localhost:5000",
-		grpc.WithInsecure(),
+		[]grpc.DialOption{grpc.WithInsecure()},
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -248,6 +253,26 @@ func main() {
 
 	http.ListenAndServe(":8080", mux)
 }
+```
+
+启动grpc服务 ,端口5000
+```go
+type RestServiceImpl struct{}
+
+func (r *RestServiceImpl) Get(ctx context.Context, message *StringMessage) (*StringMessage, error) {
+	return &StringMessage{Value: "Get hi:" + message.Value + "#"}, nil
+}
+
+func (r *RestServiceImpl) Post(ctx context.Context, message *StringMessage) (*StringMessage, error) {
+	return &StringMessage{Value: "Post hi:" + message.Value + "@"}, nil
+}
+func main() {
+	grpcServer := grpc.NewServer()
+	RegisterRestServiceServer(grpcServer, new(RestServiceImpl))
+	lis, _ := net.Listen("tcp", ":5000")
+	grpcServer.Serve(lis)
+}
+
 ```
 
 首先通过runtime.NewServeMux()函数创建路由处理器，然后通过RegisterRestServiceHandlerFromEndpoint函数将RestService服务相关的REST接口中转到后面的gRPC服务。grpc-gateway提供的runtime.ServeMux类也实现了http.Handler接口，因此可以和标准库中的相关函数配合使用。

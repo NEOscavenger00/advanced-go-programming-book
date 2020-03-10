@@ -121,11 +121,11 @@ package main
 #cgo linux CFLAGS: -DCGO_OS_LINUX=1
 
 #if defined(CGO_OS_WINDOWS)
-	static const char* os = "windows";
+	const char* os = "windows";
 #elif defined(CGO_OS_DARWIN)
-	static const char* os = "darwin";
+	const char* os = "darwin";
 #elif defined(CGO_OS_LINUX)
-	static const char* os = "linux";
+	const char* os = "linux";
 #else
 #	error(unknown os)
 #endif
